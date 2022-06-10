@@ -1,12 +1,13 @@
 import React from 'react';
-import { Header, SearchForm, Button, Label, Input } from './Searchbar.styled';
+import { BsSearch } from 'react-icons/bs';
+import { Header, SearchForm, Button, Input } from './Searchbar.styled';
 
 export function Searchbar() {
   return (
     <Header>
       <SearchForm>
         <Button type="submit">
-          <Label>Search</Label>
+          <BsSearch />
         </Button>
 
         <Input
@@ -15,14 +16,6 @@ export function Searchbar() {
           autoFocus
           placeholder="Search images and photos"
         />
-
-        {/* <input
-          class="input"
-          type="text"
-          autocomplete="off"
-          autofocus
-          placeholder="Search images and photos"
-        /> */}
       </SearchForm>
     </Header>
   );
