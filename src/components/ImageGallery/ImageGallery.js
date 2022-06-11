@@ -8,7 +8,7 @@ export function ImageGallery({ images }) {
       {images.map(image => (
         <ImageGalleryItem
           key={image.id}
-          name={image.tags}
+          tags={image.tags}
           image={image.webformatURL}
         />
       ))}

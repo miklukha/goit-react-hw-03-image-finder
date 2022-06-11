@@ -1,41 +1,30 @@
 import React, { Component } from 'react';
 import { Searchbar } from 'components/Searchbar';
 import { ImageGallery } from 'components/ImageGallery';
-import { Section } from './App.styled';
+import { Button } from 'components/Button';
+import { Section, LoaderWrapper } from './App.styled';
+import { BallTriangle } from 'react-loader-spinner';
 
 export class App extends Component {
   state = {
     images: [],
-    page: 1, // gallery
-    // query: '', // here
+    page: 1,
+    query: '',
+    loading: false,
   };
 
-  // componentDidMount() {
-  //   const { query, page } = this.state;
-  //   this.getPhotos(query, page);
-  //   document.title = `Gallery - ${query}`;
-  //   console.log(this.state.images);
-  // }
+  async componentDidUpdate(_, prevState) {
+    const { query } = this.state;
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   const { query, page } = this.state;
-  //   if (prevState.page !== this.state.page) {
-  //     this.getPhotos(query, page);
-  //   }
-  // }
+    if (prevState.page !== this.state.page) {
+      await this.getImages(query);
+    }
+  }
 
-  // getPhotos = async (query, page) => {
-  //   const data = await ImageService.getImages(query, page);
-  //   if (page === 1) {
-  //     this.setState({ images: data.photos });
-  //     return;
-  //   }
-  //   this.setState(prevState => ({
-  //     images: [...prevState.images, ...data.photos],
-  //   }));
-  // };
+  getImages = async query => {
+    this.setState({ loading: true });
+    this.setState({ query: query });
 
-  getImages = async (query, page) => {
     const API_KEY = '26815129-636df5f0482082ec4ff5cd1a9';
     const BASE_URL = 'https://pixabay.com/api/';
 
@@ -43,26 +32,68 @@ export class App extends Component {
       `${BASE_URL}?q=${query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
     );
     const images = await response.json();
-    // const data = images.hits;
-    // console.log(data);
 
-    this.setState({ images: images.hits });
-    console.log(this.state);
+    // fetch(
+    //   `${BASE_URL}?q=${query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
+    // )
+    //   .then(res => res.json())
+    //   .then(images => this.setState({ images: images.hits, loading: false }));
+    // const images = await response.json();
 
-    // this.setState(prevState => ({
-    //   images: [...prevState.images, ...data.photos],
-    // }));
+    if (this.state.page === 1) {
+      this.setState({ images: images.hits, loading: false });
+      return;
+    }
 
-    // id webformatURL largeImageURL
+    this.setState(prevState => ({
+      images: [...prevState.images, ...images.hits],
+      loading: false,
+    }));
+
+    // this.setState({ loading: false });
+  };
+
+  onLoadMore = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
   };
 
   render() {
-    // this.getImages();
+    const { images } = this.state;
+
     return (
       <Section>
         <Searchbar onSubmit={this.getImages} />
-        <ImageGallery images={this.state.images} />
+        {this.state.loading && (
+          <LoaderWrapper>
+            <BallTriangle
+              heigth="100"
+              width="100"
+              color="grey"
+              ariaLabel="loading-indicator"
+            />
+          </LoaderWrapper>
+        )}
+        <ImageGallery images={images} />
+        {images.length !== 0 && <Button onClick={this.onLoadMore} />}
       </Section>
+
+      //       if (status === 'idle') {
+      //   return <div>Введите имя покемона.</div>;
+      // }
+
+      // if (status === 'pending') {
+      //   return <PokemonPendingView pokemonName={pokemonName} />;
+      // }
+
+      // if (status === 'rejected') {
+      //   return <PokemonErrorView message={error.message} />;
+      // }
+
+      // if (status === 'resolved') {
+      //   return <PokemonDataView pokemon={pokemon} />;
+      // }
     );
   }
 }

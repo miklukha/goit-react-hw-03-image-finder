@@ -1,10 +1,10 @@
 import React from 'react';
 import { Item, Image } from './ImageGalleryItem.styled';
 
-export function ImageGalleryItem({ name, image }) {
+export function ImageGalleryItem({ tags, image }) {
   return (
     <Item>
-      <Image src={image} alt={name} />
+      <Image src={image} alt={tags} />
     </Item>
   );
 }
