@@ -2,15 +2,20 @@ import React, { Component } from 'react';
 import { Searchbar } from 'components/Searchbar';
 import { ImageGallery } from 'components/ImageGallery';
 import { Button } from 'components/Button';
-import { Section, LoaderWrapper } from './App.styled';
-import { BallTriangle } from 'react-loader-spinner';
+import { Loader } from 'components/Loader';
+import { Modal } from 'components/Modal';
+import { Section } from './App.styled';
 
 export class App extends Component {
   state = {
     images: [],
     page: 1,
     query: '',
+    totalHits: '',
+    perPage: 12,
     loading: false,
+    showModal: false,
+    largeImg: '',
   };
 
   async componentDidUpdate(_, prevState) {
@@ -21,6 +26,13 @@ export class App extends Component {
     }
   }
 
+  openModal = ({ image }) => {
+    this.setState({
+      showModal: true,
+      largeImg: image,
+    });
+  };
+
   getImages = async query => {
     this.setState({ loading: true });
     this.setState({ query: query });
@@ -29,9 +41,16 @@ export class App extends Component {
     const BASE_URL = 'https://pixabay.com/api/';
 
     const response = await fetch(
-      `${BASE_URL}?q=${query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
+      `${BASE_URL}?q=${query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${this.state.perPage}`
     );
     const images = await response.json();
+
+    if (images.hits.length === 0) {
+      this.setState({
+        loading: false,
+      });
+      return alert('Nothing found');
+    }
 
     // fetch(
     //   `${BASE_URL}?q=${query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
@@ -41,13 +60,18 @@ export class App extends Component {
     // const images = await response.json();
 
     if (this.state.page === 1) {
-      this.setState({ images: images.hits, loading: false });
+      this.setState({
+        images: images.hits,
+        loading: false,
+        totalHits: images.totalHits,
+      });
       return;
     }
 
     this.setState(prevState => ({
       images: [...prevState.images, ...images.hits],
       loading: false,
+      totalHits: images.totalHits,
     }));
 
     // this.setState({ loading: false });
@@ -60,23 +84,20 @@ export class App extends Component {
   };
 
   render() {
-    const { images } = this.state;
+    const { images, totalHits, perPage, showModal, largeImg, query } =
+      this.state;
 
     return (
       <Section>
         <Searchbar onSubmit={this.getImages} />
-        {this.state.loading && (
-          <LoaderWrapper>
-            <BallTriangle
-              heigth="100"
-              width="100"
-              color="grey"
-              ariaLabel="loading-indicator"
-            />
-          </LoaderWrapper>
+        {this.state.loading && <Loader />}
+        <ImageGallery images={images} onClick={this.openModal} />
+        {totalHits > perPage && <Button onClick={this.onLoadMore} />}
+        {showModal && (
+          <Modal>
+            <img src={largeImg} alt={query} />
+          </Modal>
         )}
-        <ImageGallery images={images} />
-        {images.length !== 0 && <Button onClick={this.onLoadMore} />}
       </Section>
 
       //       if (status === 'idle') {
