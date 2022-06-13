@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import { Searchbar } from 'components/Searchbar';
 import { ImageGallery } from 'components/ImageGallery';
 import { Button } from 'components/Button';
 import { Loader } from 'components/Loader';
 import { Modal } from 'components/Modal';
 import { Section } from './App.styled';
+import { imageAPI } from 'service/image-api';
 
 export class App extends Component {
   state = {
@@ -21,6 +23,15 @@ export class App extends Component {
   async componentDidUpdate(_, prevState) {
     const { query } = this.state;
 
+    if (prevState.query !== query) {
+      this.setState({
+        page: 1,
+        images: [],
+        largeImg: '',
+        totalHits: '',
+      });
+    }
+
     if (prevState.page !== this.state.page) {
       await this.getImages(query);
     }
@@ -33,48 +44,36 @@ export class App extends Component {
     });
   };
 
+  closeModal = () => {
+    this.setState({
+      showModal: false,
+    });
+  };
+
   getImages = async query => {
-    this.setState({ loading: true });
-    this.setState({ query: query });
+    const { page, perPage } = this.state;
+    this.setState({ query, loading: true });
 
-    const API_KEY = '26815129-636df5f0482082ec4ff5cd1a9';
-    const BASE_URL = 'https://pixabay.com/api/';
+    try {
+      const response = await imageAPI.fetchImage(query, page, perPage);
+      const images = await response.json();
 
-    const response = await fetch(
-      `${BASE_URL}?q=${query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${this.state.perPage}`
-    );
-    const images = await response.json();
+      if (images.hits.length === 0) {
+        this.setState({
+          loading: false,
+        });
 
-    if (images.hits.length === 0) {
-      this.setState({
-        loading: false,
-      });
-      return alert('Nothing found');
-    }
+        throw new Error('Nothing found');
+      }
 
-    // fetch(
-    //   `${BASE_URL}?q=${query}&page=${this.state.page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-    // )
-    //   .then(res => res.json())
-    //   .then(images => this.setState({ images: images.hits, loading: false }));
-    // const images = await response.json();
-
-    if (this.state.page === 1) {
-      this.setState({
-        images: images.hits,
+      this.setState(prevState => ({
+        images: [...prevState.images, ...images.hits],
         loading: false,
         totalHits: images.totalHits,
-      });
-      return;
+      }));
+    } catch (error) {
+      Notify.failure('Nothing found');
     }
-
-    this.setState(prevState => ({
-      images: [...prevState.images, ...images.hits],
-      loading: false,
-      totalHits: images.totalHits,
-    }));
-
-    // this.setState({ loading: false });
   };
 
   onLoadMore = () => {
@@ -94,27 +93,11 @@ export class App extends Component {
         <ImageGallery images={images} onClick={this.openModal} />
         {totalHits > perPage && <Button onClick={this.onLoadMore} />}
         {showModal && (
-          <Modal>
+          <Modal onClose={this.closeModal}>
             <img src={largeImg} alt={query} />
           </Modal>
         )}
       </Section>
-
-      //       if (status === 'idle') {
-      //   return <div>Введите имя покемона.</div>;
-      // }
-
-      // if (status === 'pending') {
-      //   return <PokemonPendingView pokemonName={pokemonName} />;
-      // }
-
-      // if (status === 'rejected') {
-      //   return <PokemonErrorView message={error.message} />;
-      // }
-
-      // if (status === 'resolved') {
-      //   return <PokemonDataView pokemon={pokemon} />;
-      // }
     );
   }
 }

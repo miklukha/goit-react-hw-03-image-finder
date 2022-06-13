@@ -9,4 +9,6 @@ export const Wrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
 `;

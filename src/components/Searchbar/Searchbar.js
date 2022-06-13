@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import PropTypes from 'prop-types';
 import { BsSearch } from 'react-icons/bs';
 import { Header, SearchForm, Button, Input } from './Searchbar.styled';
 
@@ -8,10 +10,10 @@ export class Searchbar extends Component {
   };
 
   handleChange = e => {
-    const value = e.currentTarget.value;
+    const query = e.currentTarget.value;
 
     this.setState({
-      query: value,
+      query,
     });
   };
 
@@ -19,7 +21,7 @@ export class Searchbar extends Component {
     e.preventDefault();
 
     if (this.state.query.trim() === '') {
-      alert('Enter your query');
+      Notify.info('Enter your query');
       return;
     }
 
@@ -46,6 +48,7 @@ export class Searchbar extends Component {
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
+            value={this.state.query}
             onChange={this.handleChange}
           />
         </SearchForm>
@@ -53,3 +56,7 @@ export class Searchbar extends Component {
     );
   }
 }
+
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};

@@ -1,19 +1,25 @@
-import React, { Component } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { ImageGalleryItem } from 'components/ImageGalleryItem';
 import { Gallery } from './ImageGallery.styled';
 
 export function ImageGallery({ images, onClick }) {
   return (
     <Gallery>
-      {images.map(image => (
+      {images.map(({ id, tags, webformatURL, largeImageURL }) => (
         <ImageGalleryItem
-          key={image.id}
-          tags={image.tags}
-          image={image.webformatURL}
-          largeImg={image.largeImageURL}
+          key={id}
+          tags={tags}
+          image={webformatURL}
+          largeImg={largeImageURL}
           onClick={onClick}
         />
       ))}
     </Gallery>
   );
 }
+
+ImageGallery.propTypes = {
+  images: PropTypes.array.isRequired,
+  onClick: PropTypes.func,
+};
