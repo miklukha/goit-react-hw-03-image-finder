@@ -1,25 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Item, Image } from './ImageGalleryItem.styled';
-
-export class ImageGalleryItem extends Component {
-  state = {
-    image: this.props.largeImg,
-  };
-
-  onClickImg = () => {
-    this.props.onClick(this.state);
-  };
-
-  render() {
-    const { image, tags } = this.props;
-
-    return (
-      <Item onClick={this.onClickImg}>
-        <Image src={image} alt={tags} />
-      </Item>
-    );
-  }
+export function ImageGalleryItem({ image, tags, onClick, largeImg }) {
+  return (
+    <Item onClick={() => onClick(largeImg)}>
+      <Image src={image} alt={tags} />
+    </Item>
+  );
 }
 
 ImageGalleryItem.propTypes = {

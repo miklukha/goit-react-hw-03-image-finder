@@ -10,7 +10,7 @@ export class Searchbar extends Component {
   };
 
   handleChange = e => {
-    const query = e.currentTarget.value;
+    const query = e.currentTarget.value.trim();
 
     this.setState({
       query,

@@ -7,17 +7,16 @@ import { Loader } from 'components/Loader';
 import { Modal } from 'components/Modal';
 import { Section } from './App.styled';
 import { imageAPI } from 'service/image-api';
-
 export class App extends Component {
   state = {
     images: [],
     page: 1,
-    query: '',
-    totalHits: '',
     perPage: 12,
+    query: '',
+    largeImg: '',
     loading: false,
     showModal: false,
-    largeImg: '',
+    showButton: false,
   };
 
   async componentDidUpdate(_, prevState) {
@@ -37,7 +36,7 @@ export class App extends Component {
     }
   }
 
-  openModal = ({ image }) => {
+  openModal = image => {
     this.setState({
       showModal: true,
       largeImg: image,
@@ -61,16 +60,23 @@ export class App extends Component {
       if (images.hits.length === 0) {
         this.setState({
           loading: false,
+          showButton: false,
         });
 
-        throw new Error('Nothing found');
+        throw new Error();
       }
 
       this.setState(prevState => ({
         images: [...prevState.images, ...images.hits],
         loading: false,
-        totalHits: images.totalHits,
+        showButton: true,
       }));
+
+      if (images.hits.length < perPage || images.totalHits < perPage) {
+        this.setState({
+          showButton: false,
+        });
+      }
     } catch (error) {
       Notify.failure('Nothing found');
     }
@@ -83,15 +89,14 @@ export class App extends Component {
   };
 
   render() {
-    const { images, totalHits, perPage, showModal, largeImg, query } =
-      this.state;
+    const { images, showModal, largeImg, query, showButton } = this.state;
 
     return (
       <Section>
         <Searchbar onSubmit={this.getImages} />
         {this.state.loading && <Loader />}
         <ImageGallery images={images} onClick={this.openModal} />
-        {totalHits > perPage && <Button onClick={this.onLoadMore} />}
+        {showButton && <Button onClick={this.onLoadMore} />}
         {showModal && (
           <Modal onClose={this.closeModal}>
             <img src={largeImg} alt={query} />
